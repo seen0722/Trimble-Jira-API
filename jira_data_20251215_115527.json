@@ -1,0 +1,270 @@
+[
+  {
+    "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+    "id": "4828038",
+    "self": "https://jira.trimble.tools/rest/api/2/issue/4828038",
+    "key": "THRPI-322",
+    "fields": {
+      "summary": "Update to Thorpe Optical Instrument power state behaviour",
+      "created": "2025-12-12T01:33:04.000+0000",
+      "description": "Per the Pegatron/Trimble meeting on December 10, 2025, Trimble requests a change to the Optical Instrument interface behavior to align the behaviour more with the Main USB logic.\r\n\r\n*Requirement:* Currently, applying VBUS to the Optical Interface while the device is \"Off\" causes it to turn \"On.\" This must be changed so the device enters the *\"Charging Only\"* state instead.\r\n\r\n*Attachments:* Please refer to Page 7 of the attached {{Thorpe - Optical Interface HW Validation v2.pdf}} for the updated state diagram.\r\n\r\nAn annotated copy of the state diagram is shown below:\r\n * *Red shape:* Indicates the requested change described above.\r\n\r\n * *Blue shapes:* Changes to the diagram which document existing behavior for completeness. *No changes are required by Pegatron for these transitions.*\r\n\r\n_(Note: {{Thorpe Expansion interface v1.0}} is provided for context only and remains unchanged.)_\r\n\r\n \r\n\r\n!image-2025-12-12-14-13-55-851.png|width=547,height=381!",
+      "assignee": {
+        "self": "https://jira.trimble.tools/rest/api/2/user?username=Ryan6_Lin%40pegatroncorp.com",
+        "name": "Ryan6_Lin@pegatroncorp.com",
+        "key": "JIRAUSER53626",
+        "emailAddress": "Ryan6_Lin@pegatroncorp.com",
+        "avatarUrls": {
+          "48x48": "https://www.gravatar.com/avatar/8fed413eab8990976d6045710d2789f2?d=mm&s=48",
+          "24x24": "https://www.gravatar.com/avatar/8fed413eab8990976d6045710d2789f2?d=mm&s=24",
+          "16x16": "https://www.gravatar.com/avatar/8fed413eab8990976d6045710d2789f2?d=mm&s=16",
+          "32x32": "https://www.gravatar.com/avatar/8fed413eab8990976d6045710d2789f2?d=mm&s=32"
+        },
+        "displayName": "Ryan Lin1 EXT",
+        "active": true,
+        "timeZone": "UTC"
+      },
+      "priority": {
+        "self": "https://jira.trimble.tools/rest/api/2/priority/6",
+        "iconUrl": "https://jira.trimble.tools/images/icons/priorities/medium.svg",
+        "name": "Medium",
+        "id": "6"
+      },
+      "status": {
+        "self": "https://jira.trimble.tools/rest/api/2/status/10041",
+        "description": "Default status",
+        "iconUrl": "https://jira.trimble.tools/images/icons/statuses/generic.png",
+        "name": "New",
+        "id": "10041",
+        "statusCategory": {
+          "self": "https://jira.trimble.tools/rest/api/2/statuscategory/2",
+          "id": 2,
+          "key": "new",
+          "colorName": "default",
+          "name": "To Do"
+        }
+      }
+    },
+    "renderedFields": null
+  },
+  {
+    "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+    "id": "4826892",
+    "self": "https://jira.trimble.tools/rest/api/2/issue/4826892",
+    "key": "THRPI-321",
+    "fields": {
+      "summary": "[A15]Battery charging error message after over 48hrs charging",
+      "created": "2025-12-11T08:53:53.000+0000",
+      "description": "1 of 5 daily stress testing units found Battery charging error dialog show up after PD adapter connected over 2days.\r\n\r\nThe full battery charging green LED is still there, and battery charging icon is normal.",
+      "assignee": {
+        "self": "https://jira.trimble.tools/rest/api/2/user?username=Billy_Chen%40pegatroncorp.com",
+        "name": "Billy_Chen@pegatroncorp.com",
+        "key": "JIRAUSER55931",
+        "emailAddress": "Billy_Chen@pegatroncorp.com",
+        "avatarUrls": {
+          "48x48": "https://jira.trimble.tools/secure/useravatar?ownerId=JIRAUSER55931&avatarId=51410",
+          "24x24": "https://jira.trimble.tools/secure/useravatar?size=small&ownerId=JIRAUSER55931&avatarId=51410",
+          "16x16": "https://jira.trimble.tools/secure/useravatar?size=xsmall&ownerId=JIRAUSER55931&avatarId=51410",
+          "32x32": "https://jira.trimble.tools/secure/useravatar?size=medium&ownerId=JIRAUSER55931&avatarId=51410"
+        },
+        "displayName": "Billy Chen EXT",
+        "active": true,
+        "timeZone": "UTC"
+      },
+      "priority": {
+        "self": "https://jira.trimble.tools/rest/api/2/priority/10101",
+        "iconUrl": "https://jira.trimble.tools/images/icons/priorities/question.svg",
+        "name": "Undecided",
+        "id": "10101"
+      },
+      "status": {
+        "self": "https://jira.trimble.tools/rest/api/2/status/10041",
+        "description": "Default status",
+        "iconUrl": "https://jira.trimble.tools/images/icons/statuses/generic.png",
+        "name": "New",
+        "id": "10041",
+        "statusCategory": {
+          "self": "https://jira.trimble.tools/rest/api/2/statuscategory/2",
+          "id": 2,
+          "key": "new",
+          "colorName": "default",
+          "name": "To Do"
+        }
+      }
+    },
+    "renderedFields": null
+  },
+  {
+    "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+    "id": "4825346",
+    "self": "https://jira.trimble.tools/rest/api/2/issue/4825346",
+    "key": "THRPI-320",
+    "fields": {
+      "summary": "[Thorpe_DVT2][A15]The System rarely powers off automatically when it has a full battery and is connected to AC while idling for over 48 hours",
+      "created": "2025-12-10T03:34:08.000+0000",
+      "description": "{*}Actual Symptom{*}{*}:{*}  The System rarely powers off automatically \r\n\r\n{*}Expected Results{*}{*}:{*} The System work normally\r\n\r\n*Steps to reproduce*\r\n\r\n1.Power on the system with fully battery\r\n\r\n2.Plug in AC\r\n\r\n3.Let system idling for over 48 hours \r\n\r\n4.Check the system status ,The System rarely powers off automatically  #error\r\n\r\n \r\n\r\nTest result\r\n\r\nDVT2-SKU1#01: 0 Fails / 2 Totals\r\n\r\nDVT2-SKU1#02: 0 Fails / 2 Totals\r\n\r\n{color:#de350b}DVT2-SKU1#03: 1 Fails / 2 Totals{color}\r\n\r\nDVT2-SKU1#04: 0 Fails / 2 Totals\r\n\r\n{color:#de350b}DVT2-SKU1#05: 1 Fails / 2 Totals{color}\r\n\r\nDVT2-SKU1#06: 0 Fails / 2 Totals\r\n\r\nDVT2-SKU3#01: 0 Fails / 2 Totals\r\n\r\nDVT2-SKU3#02: 0 Fails / 2 Totals\r\n\r\n{color:#de350b}DVT2-SKU3#03: 1 Fails / 2 Totals{color}\r\n\r\nDVT2-SKU3#04: 0 Fails / 2 Totals\r\n\r\nDVT2-SKU3#05: 0 Fails / 2 Totals\r\n\r\nDVT2-SKU3#06: 0 Fails / 2 Totals\r\n\r\n ",
+      "assignee": {
+        "self": "https://jira.trimble.tools/rest/api/2/user?username=Terry_Tzeng%40pegatroncorp.com",
+        "name": "Terry_Tzeng@pegatroncorp.com",
+        "key": "JIRAUSER56217",
+        "emailAddress": "Terry_Tzeng@pegatroncorp.com",
+        "avatarUrls": {
+          "48x48": "https://www.gravatar.com/avatar/5837ac3c7dafe0a7922876ee234f091c?d=mm&s=48",
+          "24x24": "https://www.gravatar.com/avatar/5837ac3c7dafe0a7922876ee234f091c?d=mm&s=24",
+          "16x16": "https://www.gravatar.com/avatar/5837ac3c7dafe0a7922876ee234f091c?d=mm&s=16",
+          "32x32": "https://www.gravatar.com/avatar/5837ac3c7dafe0a7922876ee234f091c?d=mm&s=32"
+        },
+        "displayName": "Terry Tzeng EXT",
+        "active": true,
+        "timeZone": "UTC"
+      },
+      "priority": {
+        "self": "https://jira.trimble.tools/rest/api/2/priority/6",
+        "iconUrl": "https://jira.trimble.tools/images/icons/priorities/medium.svg",
+        "name": "Medium",
+        "id": "6"
+      },
+      "status": {
+        "self": "https://jira.trimble.tools/rest/api/2/status/1",
+        "description": "The issue is open and ready for the assignee to start work on it.",
+        "iconUrl": "https://jira.trimble.tools/images/icons/statuses/open.png",
+        "name": "Open",
+        "id": "1",
+        "statusCategory": {
+          "self": "https://jira.trimble.tools/rest/api/2/statuscategory/2",
+          "id": 2,
+          "key": "new",
+          "colorName": "default",
+          "name": "To Do"
+        }
+      }
+    },
+    "renderedFields": null
+  },
+  {
+    "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+    "id": "4825345",
+    "self": "https://jira.trimble.tools/rest/api/2/issue/4825345",
+    "key": "THRPI-319",
+    "fields": {
+      "summary": "[Thorpe_DVT2][A15]The System rarely powers off automatically when it has a full battery and is connected to AC while idling for over 48 hours",
+      "created": "2025-12-10T03:31:09.000+0000",
+      "description": "{*}Actual Symptom{*}{*}:{*}  The System rarely powers off automatically \r\n\r\n{*}Expected Results{*}{*}:{*} The System work normally\r\n\r\n*Steps to reproduce*\r\n\r\n1.Power on the system with fully battery\r\n\r\n2.Plug in AC\r\n\r\n3.Let system idling for over 48 hours \r\n\r\n4.Check the system status ,The System rarely powers off automatically  #error\r\n\r\n \r\n\r\nTest result\r\n\r\nDVT2-SKU1#01: 0 Fails / 2 Totals\r\n\r\nDVT2-SKU1#02: 0 Fails / 2 Totals\r\n\r\nDVT2-SKU1#03: 0 Fails / 2 Totals\r\n\r\nDVT2-SKU1#04: 0 Fails / 2 Totals\r\n\r\nDVT2-SKU1#05: 0 Fails / 2 Totals\r\n\r\nDVT2-SKU1#06: 0 Fails / 2 Totals\r\n\r\nDVT2-SKU3#01: 0 Fails / 2 Totals\r\n\r\nDVT2-SKU3#01: 0 Fails / 2 Totals\r\n\r\nDVT2-SKU3#01: 0 Fails / 2 Totals\r\n\r\n ",
+      "assignee": {
+        "self": "https://jira.trimble.tools/rest/api/2/user?username=jjhang%40ap.trimblecorp.net",
+        "name": "jjhang@ap.trimblecorp.net",
+        "key": "JIRAUSER58106",
+        "emailAddress": "jjhang@ap.trimblecorp.net",
+        "avatarUrls": {
+          "48x48": "https://jira.trimble.tools/secure/useravatar?ownerId=JIRAUSER58106&avatarId=53506",
+          "24x24": "https://jira.trimble.tools/secure/useravatar?size=small&ownerId=JIRAUSER58106&avatarId=53506",
+          "16x16": "https://jira.trimble.tools/secure/useravatar?size=xsmall&ownerId=JIRAUSER58106&avatarId=53506",
+          "32x32": "https://jira.trimble.tools/secure/useravatar?size=medium&ownerId=JIRAUSER58106&avatarId=53506"
+        },
+        "displayName": "Jeff Jhang EXT",
+        "active": true,
+        "timeZone": "UTC"
+      },
+      "priority": {
+        "self": "https://jira.trimble.tools/rest/api/2/priority/6",
+        "iconUrl": "https://jira.trimble.tools/images/icons/priorities/medium.svg",
+        "name": "Medium",
+        "id": "6"
+      },
+      "status": {
+        "self": "https://jira.trimble.tools/rest/api/2/status/6",
+        "description": "The issue is considered finished, the resolution is correct. Issues which are closed can be reopened.",
+        "iconUrl": "https://jira.trimble.tools/images/icons/statuses/closed.png",
+        "name": "Closed",
+        "id": "6",
+        "statusCategory": {
+          "self": "https://jira.trimble.tools/rest/api/2/statuscategory/3",
+          "id": 3,
+          "key": "done",
+          "colorName": "success",
+          "name": "Done"
+        }
+      }
+    },
+    "renderedFields": null
+  },
+  {
+    "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+    "id": "4813289",
+    "self": "https://jira.trimble.tools/rest/api/2/issue/4813289",
+    "key": "THRPI-318",
+    "fields": {
+      "summary": "CU_PWR_BTN_B signal is temporarily pulled low when Thorpe boots from \"off\" to \"charging only\" due to presence of main USB-C power.",
+      "created": "2025-11-28T03:42:26.000+0000",
+      "description": "Expected behaviour: CU_PWR_BTN_B remains pulled high when Thorpe transitions from \"off\" to \"charging only\", as the device has not booted to Android OS yet.\r\n\r\nObserved behaviour: When the AC adapter is connected, Thorpe changes state from \"off\" to \"charging only\". After some time, CU_PWR_BTN_B is pulled low for approximately 11 seconds. Once the device reaches charging only, the CU_PWR_BTN_B signal goes back high. See trace below.\r\n\r\n!image-2025-11-28-16-37-38-928.png|width=449,height=337!",
+      "assignee": null,
+      "priority": {
+        "self": "https://jira.trimble.tools/rest/api/2/priority/6",
+        "iconUrl": "https://jira.trimble.tools/images/icons/priorities/medium.svg",
+        "name": "Medium",
+        "id": "6"
+      },
+      "status": {
+        "self": "https://jira.trimble.tools/rest/api/2/status/6",
+        "description": "The issue is considered finished, the resolution is correct. Issues which are closed can be reopened.",
+        "iconUrl": "https://jira.trimble.tools/images/icons/statuses/closed.png",
+        "name": "Closed",
+        "id": "6",
+        "statusCategory": {
+          "self": "https://jira.trimble.tools/rest/api/2/statuscategory/3",
+          "id": 3,
+          "key": "done",
+          "colorName": "success",
+          "name": "Done"
+        }
+      }
+    },
+    "renderedFields": null
+  },
+  {
+    "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+    "id": "4801964",
+    "self": "https://jira.trimble.tools/rest/api/2/issue/4801964",
+    "key": "THRPI-317",
+    "fields": {
+      "summary": "[DVT2] Speaker Performance Issue",
+      "created": "2025-11-18T11:26:19.000+0000",
+      "description": "*PRD Requirement:* >80dB SPL over the frequency range 300Hz to 5kHz for audio notifications, measured at 0.5M in front of device\r\n\r\n*DVT2 Test Result (Fail):* \r\n\r\n(1) 77dB SPL at 1KHz.\r\n\r\n(2) The Vrms will reached to approx. 5~6 Vrms after 1KHz, which is over the speaker's nominal voltage spec 2.8Vrms, it might damage the speaker.",
+      "assignee": {
+        "self": "https://jira.trimble.tools/rest/api/2/user?username=Renee_Peng%40pegatroncorp.com",
+        "name": "Renee_Peng@pegatroncorp.com",
+        "key": "renee_peng@trimble.com",
+        "emailAddress": "Renee_Peng@pegatroncorp.com",
+        "avatarUrls": {
+          "48x48": "https://jira.trimble.tools/secure/useravatar?ownerId=renee_peng%40trimble.com&avatarId=22462",
+          "24x24": "https://jira.trimble.tools/secure/useravatar?size=small&ownerId=renee_peng%40trimble.com&avatarId=22462",
+          "16x16": "https://jira.trimble.tools/secure/useravatar?size=xsmall&ownerId=renee_peng%40trimble.com&avatarId=22462",
+          "32x32": "https://jira.trimble.tools/secure/useravatar?size=medium&ownerId=renee_peng%40trimble.com&avatarId=22462"
+        },
+        "displayName": "Renee Peng EXT",
+        "active": true,
+        "timeZone": "UTC"
+      },
+      "priority": {
+        "self": "https://jira.trimble.tools/rest/api/2/priority/2",
+        "iconUrl": "https://jira.trimble.tools/images/icons/priorities/blocker.svg",
+        "name": "Critical",
+        "id": "2"
+      },
+      "status": {
+        "self": "https://jira.trimble.tools/rest/api/2/status/10026",
+        "description": "This status is managed internally by JIRA Software",
+        "iconUrl": "https://jira.trimble.tools/images/icons/subtask.gif",
+        "name": "Ready for Test",
+        "id": "10026",
+        "statusCategory": {
+          "self": "https://jira.trimble.tools/rest/api/2/statuscategory/4",
+          "id": 4,
+          "key": "indeterminate",
+          "colorName": "inprogress",
+          "name": "In Progress"
+        }
+      }
+    },
+    "renderedFields": null
+  }
+]
