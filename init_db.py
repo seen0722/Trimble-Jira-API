@@ -40,6 +40,11 @@ def init_db():
             resolution_date DATETIME,
             type TEXT,
             component TEXT,
+            reporter TEXT,
+            updated_date DATETIME,
+            labels TEXT,
+            latest_comment TEXT,
+            llm_summary TEXT,
             FOREIGN KEY(snapshot_id) REFERENCES snapshots(snapshot_id)
         )
     ''')
