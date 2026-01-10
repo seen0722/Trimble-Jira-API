@@ -30,13 +30,13 @@ This project is containerized using Docker for easy deployment.
 
 3. **Start the services**
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
 
 ### Accessing the App
 
-- **Frontend**: http://your-vultr-ip
-- **Backend API**: http://your-vultr-ip:8000/docs (Swagger UI)
+- **Frontend**: http://your-vultr-ip:8081
+- **Backend API**: http://your-vultr-ip:8081/api/docs (Swagger UI)
 
 ---
 
