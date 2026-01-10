@@ -10,7 +10,7 @@ import {
 import { Link } from 'react-router-dom';
 import './Dashboard.css';
 
-const API_BASE = 'http://127.0.0.1:8000/api';
+const API_BASE = '/api';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 const STATUS_COLOR_MAP = {
