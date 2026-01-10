@@ -5,9 +5,9 @@ import {
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 import { 
-  Activity, Bug, CheckCircle2, RotateCw, AlertTriangle, TrendingDown, Layers, Calendar, FileText
+  Activity, Bug, CheckCircle2, RotateCw, AlertTriangle, TrendingDown, Layers, Calendar, ArrowLeft
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 const API_BASE = 'http://127.0.0.1:8000/api';
@@ -38,12 +38,12 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export default function Dashboard() {
+export default function GateDashboard() {
   const [history, setHistory] = useState([]);
   const [breakdown, setBreakdown] = useState({ priority: [], status: [] });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [generatingReport, setGeneratingReport] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -52,8 +52,8 @@ export default function Dashboard() {
   const fetchData = async () => {
     try {
       const [histRes, breakRes] = await Promise.all([
-        axios.get(`${API_BASE}/history`),
-        axios.get(`${API_BASE}/breakdown`)
+        axios.get(`${API_BASE}/gate/history`),
+        axios.get(`${API_BASE}/gate/breakdown`)
       ]);
       setHistory(histRes.data);
       setBreakdown(breakRes.data);
@@ -76,63 +76,9 @@ export default function Dashboard() {
     setRefreshing(false);
   };
 
-  // Progress modal state
-  const [reportProgress, setReportProgress] = useState({ current: 0, total: 0, status: '', issueKey: null });
-  const [reportContent, setReportContent] = useState(null);
-  const [reportFilename, setReportFilename] = useState(null);
-
-  const handleGenerateReport = () => {
-    setGeneratingReport(true);
-    setReportProgress({ current: 0, total: 0, status: 'Connecting...', issueKey: null });
-    setReportContent(null);
-    setReportFilename(null);
-
-    const eventSource = new EventSource(`${API_BASE}/weekly-report/stream`);
-
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      
-      if (data.type === 'progress') {
-        setReportProgress({
-          current: data.current,
-          total: data.total,
-          status: data.status,
-          issueKey: data.issue_key
-        });
-      } else if (data.type === 'complete') {
-        eventSource.close();
-        setReportContent(data.content);
-        setReportFilename(data.filename);
-        setReportProgress({ current: data.issue_count || 0, total: data.issue_count || 0, status: 'Complete! Downloading...', issueKey: null });
-        
-        // Download from backend endpoint (proper Content-Disposition)
-        window.location.href = `${API_BASE}/weekly-report/download`;
-        
-        setTimeout(() => setGeneratingReport(false), 1500);
-      } else if (data.type === 'error') {
-        eventSource.close();
-        alert(`Error: ${data.message}`);
-        setGeneratingReport(false);
-      }
-    };
-
-    eventSource.onerror = () => {
-      eventSource.close();
-      alert('Connection lost. Please try again.');
-      setGeneratingReport(false);
-    };
-  };
-
-
-
-  const currentStats = history.length > 0 ? history[history.length - 1] : {};
-  const prevStats = history.length > 1 ? history[history.length - 2] : {};
-  
-  // Calculations for trend
-  // Calculations for trend
-  const openDiff = (currentStats.open || 0) - (prevStats.open || 0);
-
-  // Hybrid Mode Logic for Charts (Strict Weekly)
+  // Hybrid Mode Logic:
+  // KPIs use 'history' (latest data).
+  // Charts use 'chartData' (strict weekly cadence, removing the partial latest day if it causes overlap).
   const chartData = useMemo(() => {
     if (!Array.isArray(history) || history.length < 2) return history;
     
@@ -150,7 +96,8 @@ export default function Dashboard() {
         const diffTime = Math.abs(d2 - d1);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
         
-        // If the latest point is less than 7 days from the previous one, use strict weekly
+        // If the latest point is less than 7 days from the previous one, 
+        // it's a "Forced Latest" update. We hide it from the trend charts to strictly show weekly intervals.
         if (diffDays < 7) {
             return data.slice(0, -1);
         }
@@ -164,99 +111,45 @@ export default function Dashboard() {
   if (loading) return (
     <div className="loading-screen" style={{height:'100vh', display:'flex', alignItems:'center', justifyContent:'center'}}>
       <RotateCw className="spinning" size={32} />
-      <span style={{marginLeft: 10,  fontFamily: 'Inter'}}>Loading metrics...</span>
+      <span style={{marginLeft: 10,  fontFamily: 'Inter'}}>Loading gate metrics...</span>
     </div>
   );
 
-  // Progress Modal Component
-  const ProgressModal = () => {
-    if (!generatingReport) return null;
-    const percentage = reportProgress.total > 0 
-      ? Math.round((reportProgress.current / reportProgress.total) * 100) 
-      : 0;
-    
-    return (
-      <div style={{
-        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-        background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 1000
-      }}>
-        <div style={{
-          background: 'white', borderRadius: 16, padding: 32, width: 420,
-          boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
-        }}>
-          <div style={{display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20}}>
-            <FileText size={24} color="#2563eb" />
-            <h3 style={{margin: 0, fontSize: 18}}>Generating Weekly Report</h3>
-          </div>
-          
-          <p style={{color: '#6b7280', fontSize: 14, margin: '0 0 16px'}}>
-            {reportProgress.status}
-          </p>
-          
-          {reportProgress.issueKey && (
-            <p style={{color: '#2563eb', fontSize: 13, fontFamily: 'monospace', margin: '0 0 16px'}}>
-              📋 {reportProgress.issueKey}
-            </p>
-          )}
-          
-          <div style={{
-            background: '#e5e7eb', borderRadius: 8, height: 12, overflow: 'hidden', marginBottom: 12
-          }}>
-            <div style={{
-              background: 'linear-gradient(90deg, #2563eb, #3b82f6)',
-              height: '100%', width: `${percentage}%`,
-              transition: 'width 0.3s ease',
-              borderRadius: 8
-            }} />
-          </div>
-          
-          <div style={{display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#6b7280'}}>
-            <span>{reportProgress.current} / {reportProgress.total} issues</span>
-            <span>{percentage}%</span>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  const currentStats = history.length > 0 ? history[history.length - 1] : {};
+  const prevStats = history.length > 1 ? history[history.length - 2] : {};
+  
+  // Calculations for trend
+  // Calculations for trend
+  const openDiff = (currentStats.open || 0) - (prevStats.open || 0);
+
+
 
   return (
     <div className="dashboard-container">
-      <ProgressModal />
       <header className="dashboard-header">
         <div className="header-title-group">
-          <h1><Activity color="#2563eb" /> Bug Stability Control</h1>
-          <p className="subtitle">Real-time Quality Assurance Metrics</p>
+          <h1>
+             <Link to="/" style={{display:'flex', alignItems:'center', textDecoration:'none', color:'inherit', marginRight:'16px'}}>
+                <ArrowLeft size={24} />
+             </Link>
+             <div style={{display:'flex', alignItems:'center', gap: '8px'}}>
+                <Activity color="#ec4899" /> 
+                Mass Production Gate
+             </div>
+          </h1>
+          <p className="subtitle">Tracking issues for OS_FCS Gate</p>
         </div>
-        <div style={{display:'flex', gap:'12px'}}>
-            <Link to="/gate" style={{
-              display:'flex', alignItems:'center', gap:'8px', padding:'8px 16px', 
-              background:'#fce7f3', color:'#db2777', textDecoration:'none', borderRadius:'8px', fontSize:'14px', fontWeight:'500'
-            }}>
-                <Activity size={16} /> 
-                Gate View
-            </Link>
-            <button 
-              className="refresh-btn" 
-              onClick={handleGenerateReport} 
-              disabled={generatingReport}
-              style={{background: '#dbeafe', color: '#2563eb'}}
-            >
-              <FileText className={generatingReport ? 'spinning' : ''} size={16} />
-              {generatingReport ? 'Generating...' : 'Weekly Report'}
-            </button>
-            <button className="refresh-btn" onClick={handleRefresh} disabled={refreshing}>
-              <RotateCw className={`refresh-icon ${refreshing ? 'spinning' : ''}`} size={16} />
-              {refreshing ? 'Syncing...' : 'Refresh Data'}
-            </button>
-        </div>
+        <button className="refresh-btn" onClick={handleRefresh} disabled={refreshing}>
+          <RotateCw className={`refresh-icon ${refreshing ? 'spinning' : ''}`} size={16} />
+          {refreshing ? 'Syncing...' : 'Refresh Data'}
+        </button>
       </header>
 
       {/* KPI Cards */}
       <div className="kpi-grid">
-        <div className="kpi-card" style={{cursor:'pointer'}} onClick={() => window.location.href='/bugs'}>
+        <div className="kpi-card" style={{cursor:'pointer'}} onClick={() => navigate('/gate-bugs')}>
           <div className="kpi-header">
-            <span className="kpi-title" style={{textDecoration:'underline'}}>Backlog Size</span>
+            <span className="kpi-title" style={{textDecoration:'underline'}}>Gate Backlog Size</span>
             <div className="kpi-icon-wrapper"><Layers size={20} /></div>
           </div>
           <div className="kpi-value">{currentStats.open || 0}</div>
@@ -270,7 +163,7 @@ export default function Dashboard() {
 
         <div className="kpi-card">
           <div className="kpi-header">
-            <span className="kpi-title">Critical Issues</span>
+            <span className="kpi-title">Critical Gate Issues</span>
             <div className="kpi-icon-wrapper" style={{color:'#ef4444', background:'#fee2e2'}}><AlertTriangle size={20} /></div>
           </div>
           <div className="kpi-value" style={{color: currentStats.critical > 0 ? '#ef4444' : '#10b981'}}>
@@ -301,15 +194,15 @@ export default function Dashboard() {
         {/* Chart 1: Open Trends */}
         <div className="chart-card wide">
           <div className="chart-header">
-            <h3>Open Issue Trend</h3>
-            <p className="chart-desc">Historical tracking of total open bug count over time.</p>
+            <h3>Gate Issue Trend</h3>
+            <p className="chart-desc">Historical tracking of OS_FCS bug count.</p>
           </div>
           <ResponsiveContainer width="100%" height={240}>
             <AreaChart data={chartData}>
               <defs>
-                <linearGradient id="colorOpen" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                <linearGradient id="colorOpenGate" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ec4899" stopOpacity={0.1}/>
+                  <stop offset="95%" stopColor="#ec4899" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
@@ -317,7 +210,7 @@ export default function Dashboard() {
               <YAxis tick={{fontSize: 12, fill: '#6b7280'}} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Legend iconType="circle" />
-              <Area type="monotone" dataKey="open" stroke="#2563eb" fillOpacity={1} fill="url(#colorOpen)" name="Total Open Bugs" strokeWidth={2} />
+              <Area type="monotone" dataKey="open" stroke="#ec4899" fillOpacity={1} fill="url(#colorOpenGate)" name="Open Bugs" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -354,8 +247,10 @@ export default function Dashboard() {
               <YAxis tick={{fontSize: 12, fill: '#6b7280'}} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Legend iconType="circle" />
-              <Line type="monotone" dataKey="high" stroke="#3b82f6" name="High" strokeWidth={2} dot={false} />
               <Line type="monotone" dataKey="critical" stroke="#ef4444" name="Critical" strokeWidth={2} dot={{stroke: '#ef4444', strokeWidth: 2, r: 4}} />
+              <Line type="monotone" dataKey="high" stroke="#f59e0b" name="High" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="medium" stroke="#3b82f6" name="Medium" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="low" stroke="#6b7280" name="Low" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>

@@ -3,6 +3,7 @@ import sqlite3
 import datetime
 from dotenv import load_dotenv
 from fetch_jira_data import fetch_issues
+from llm_service import llm_service
 
 # Database configuration
 DB_NAME = "dashboard.db"
@@ -50,18 +51,27 @@ def save_snapshot(issues):
         components = fields.get('components', [])
         component_str = ", ".join([c.get('name') for c in components]) if components else ""
 
+        # Handle latest comment
+        comments = fields.get('comment', {}).get('comments', [])
+        latest_comment_body = ""
+        if comments:
+            latest_comment_body = comments[-1].get('body', '')
+
+        # Handle LLM Summary
+        llm_summary = llm_service.summarize_comments(key, summary, comments)
+
         campaign_data.append((
             snapshot_id, key, summary, status, priority, 
             assignee_name, created, resolution_date, issuetype, component_str,
-            reporter_name, updated, labels_str
+            reporter_name, updated, labels_str, latest_comment_body, llm_summary
         ))
 
     cursor.executemany('''
         INSERT INTO issues (
             snapshot_id, key, summary, status, priority, 
             assignee, created_date, resolution_date, type, component,
-            reporter, updated_date, labels
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            reporter, updated_date, labels, latest_comment, llm_summary
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', campaign_data)
 
     conn.commit()

@@ -24,7 +24,7 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-def get_history():
+def get_history(label_filter=None):
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -32,7 +32,6 @@ def get_history():
     cursor.execute("SELECT snapshot_id, timestamp FROM snapshots ORDER BY timestamp ASC")
     snapshots = cursor.fetchall()
 
-    # Sort snapshots by timestamp just in case
     # Sort snapshots by timestamp just in case
     snapshots.sort(key=lambda x: x['timestamp'])
 
@@ -47,33 +46,61 @@ def get_history():
         ts_str = snap['timestamp']
         date_full = ts_str.split(' ')[0]
         
-        # Filter: Ensure at least 7 days gap from the last included snapshot
-        # UNLESS it is the absolute latest snapshot (we always want current state)
-        if last_date and sid != latest_sid:
+        # Filter logic to handle weekly cadence AND ensure latest included
+        should_include = False
+        is_same_day = (last_date == date_full)
+
+        if is_same_day:
+            # If same day, we want to replace the previous entry with this later one
+            should_include = True
+        elif not last_date:
+             # First entry
+             should_include = True
+        elif sid == latest_sid:
+             # Always include the absolute latest (if not same day as last, it's a new day)
+             should_include = True
+        else:
+             # Regular weekly cadence check
             d1 = datetime.strptime(last_date, "%Y-%m-%d")
             d2 = datetime.strptime(date_full, "%Y-%m-%d")
-            if (d2 - d1).days < 7:
-                continue
+            if (d2 - d1).days >= 7:
+                should_include = True
         
+        if not should_include:
+            continue
+
+        # If same day, remove the previous one to replace it
+        if is_same_day:
+            history.pop()
+
+        # Construct label clause
+        label_clause = f" AND labels LIKE '%{label_filter}%' " if label_filter else ""
+
         # 1. Open Bugs (Explicit Statuses)
-        cursor.execute("SELECT COUNT(*) FROM issues WHERE snapshot_id=? AND status IN ('New', 'Open', 'In Progress') AND type='Bug'", (sid,))
+        cursor.execute(f"SELECT COUNT(*) FROM issues WHERE snapshot_id=? AND status IN ('New', 'Open', 'In Progress') AND type='Bug'{label_clause}", (sid,))
         open_count = cursor.fetchone()[0]
         
         # 2. Critical & High (Explicit Statuses)
-        cursor.execute("SELECT COUNT(*) FROM issues WHERE snapshot_id=? AND status IN ('New', 'Open', 'In Progress') AND priority IN ('Critical', 'Blocker') AND type='Bug'", (sid,))
+        cursor.execute(f"SELECT COUNT(*) FROM issues WHERE snapshot_id=? AND status IN ('New', 'Open', 'In Progress') AND priority IN ('Critical', 'Blocker') AND type='Bug'{label_clause}", (sid,))
         critical = cursor.fetchone()[0]
 
-        cursor.execute("SELECT COUNT(*) FROM issues WHERE snapshot_id=? AND status IN ('New', 'Open', 'In Progress') AND priority = 'High' AND type='Bug'", (sid,))
+        cursor.execute(f"SELECT COUNT(*) FROM issues WHERE snapshot_id=? AND status IN ('New', 'Open', 'In Progress') AND priority = 'High' AND type='Bug'{label_clause}", (sid,))
         high = cursor.fetchone()[0]
+
+        cursor.execute(f"SELECT COUNT(*) FROM issues WHERE snapshot_id=? AND status IN ('New', 'Open', 'In Progress') AND priority = 'Medium' AND type='Bug'{label_clause}", (sid,))
+        medium = cursor.fetchone()[0]
+
+        cursor.execute(f"SELECT COUNT(*) FROM issues WHERE snapshot_id=? AND status IN ('New', 'Open', 'In Progress') AND priority = 'Low' AND type='Bug'{label_clause}", (sid,))
+        low = cursor.fetchone()[0]
 
         # 3. Velocity (Weekly)
         cursor.execute("SELECT date(?, '-6 days')", (date_full,))
         week_start = cursor.fetchone()[0]
 
-        cursor.execute("SELECT COUNT(*) FROM issues WHERE snapshot_id=? AND date(substr(created_date,1,10)) BETWEEN ? AND ? AND type='Bug'", (sid, week_start, date_full))
+        cursor.execute(f"SELECT COUNT(*) FROM issues WHERE snapshot_id=? AND date(substr(created_date,1,10)) BETWEEN ? AND ? AND type='Bug'{label_clause}", (sid, week_start, date_full))
         new_count = cursor.fetchone()[0]
 
-        cursor.execute("SELECT COUNT(*) FROM issues WHERE snapshot_id=? AND date(substr(resolution_date,1,10)) BETWEEN ? AND ? AND type='Bug'", (sid, week_start, date_full))
+        cursor.execute(f"SELECT COUNT(*) FROM issues WHERE snapshot_id=? AND date(substr(resolution_date,1,10)) BETWEEN ? AND ? AND type='Bug'{label_clause}", (sid, week_start, date_full))
         fixed_count = cursor.fetchone()[0]
 
         history.append({
@@ -81,6 +108,8 @@ def get_history():
             "open": open_count,
             "critical": critical,
             "high": high,
+            "medium": medium,
+            "low": low,
             "new_bugs": new_count,
             "fixed_bugs": fixed_count
         })
@@ -90,7 +119,7 @@ def get_history():
     conn.close()
     return history
 
-def get_breakdown():
+def get_breakdown(label_filter=None):
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -102,13 +131,16 @@ def get_breakdown():
         return {"priority": [], "status": []}
     
     sid = row[0]
+
+    # Construct label clause
+    label_clause = f" AND labels LIKE '%{label_filter}%' " if label_filter else ""
     
     # Priority
-    cursor.execute("SELECT priority, COUNT(*) as count FROM issues WHERE snapshot_id=? AND status IN ('New', 'Open', 'In Progress') AND type='Bug' GROUP BY priority", (sid,))
+    cursor.execute(f"SELECT priority, COUNT(*) as count FROM issues WHERE snapshot_id=? AND status IN ('New', 'Open', 'In Progress') AND type='Bug'{label_clause} GROUP BY priority", (sid,))
     priority_data = [{"name": r['priority'], "value": r['count']} for r in cursor.fetchall()]
     
     # Status
-    cursor.execute("SELECT status, COUNT(*) as count FROM issues WHERE snapshot_id=? AND status IN ('New', 'Open', 'In Progress') AND type='Bug' GROUP BY status", (sid,))
+    cursor.execute(f"SELECT status, COUNT(*) as count FROM issues WHERE snapshot_id=? AND status IN ('New', 'Open', 'In Progress') AND type='Bug'{label_clause} GROUP BY status", (sid,))
     status_data = [{"name": r['status'], "value": r['count']} for r in cursor.fetchall()]
 
     conn.close()
@@ -136,7 +168,7 @@ def trigger_snapshot():
     
     return {"status": "success", "count": len(issues)}
 
-def get_bugs_list():
+def get_bugs_list(label_filter=None, include_closed=False):
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -149,16 +181,18 @@ def get_bugs_list():
     
     sid = row[0]
     
+    label_clause = f" AND labels LIKE '%{label_filter}%' " if label_filter else ""
+    
+    status_clause = " AND status IN ('New', 'Open', 'In Progress') " if not include_closed else ""
+
     # 2. Query details for this snapshot
-    # Explicitly including only Dev statuses: New, Open, In Progress
-    # 2. Query details for this snapshot
-    # Explicitly including only Dev statuses: New, Open, In Progress
-    query = """
+    query = f"""
         SELECT key, summary, priority, status, assignee, created_date, reporter, updated_date, labels
         FROM issues 
         WHERE snapshot_id=? 
           AND type='Bug' 
-          AND status IN ('New', 'Open', 'In Progress') 
+          {status_clause}
+          {label_clause}
         ORDER BY 
           CASE priority 
             WHEN 'Critical' THEN 1 
@@ -168,7 +202,17 @@ def get_bugs_list():
             WHEN 'Low' THEN 4 
             ELSE 5 
           END ASC, 
-          status ASC
+          CASE status
+            WHEN 'New' THEN 1
+            WHEN 'Open' THEN 2
+            WHEN 'In Progress' THEN 3
+            WHEN 'Ready for Test' THEN 4
+            WHEN 'In Test' THEN 5
+            WHEN 'Resolved' THEN 6
+            WHEN 'Closed' THEN 7
+            WHEN 'Done' THEN 8
+            ELSE 9
+          END ASC
     """
     cursor.execute(query, (sid,))
     rows = cursor.fetchall()

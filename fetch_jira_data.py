@@ -53,7 +53,7 @@ def fetch_issues(jira_url, jql, email, api_token, max_results=1000):
             "jql": jql,
             "startAt": start_at,
             "maxResults": 100,
-            "fields": ["summary", "status", "assignee", "created", "priority", "description", "resolutiondate", "issuetype", "reporter", "updated", "labels"]
+            "fields": ["summary", "status", "assignee", "created", "priority", "description", "resolutiondate", "issuetype", "reporter", "updated", "labels", "comment"]
         }
         
         response = requests.get(url, headers=headers, params=params)
