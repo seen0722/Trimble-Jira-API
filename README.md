@@ -15,9 +15,11 @@ This project is containerized using Docker for easy deployment.
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/seen0722/Trimble-Jira-API.git
+   git clone git@github.com:seen0722/Trimble-Jira-API.git
    cd Trimble-Jira-API
    ```
+
+> **Note**: Make sure you have added your server's SSH public key to your [GitHub account](https://github.com/settings/keys).
 
 2. **Configure Environment Variables**
    ```bash
