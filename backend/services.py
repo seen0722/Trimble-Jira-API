@@ -11,9 +11,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 try:
     import snapshot_jira_data
     import fetch_jira_data
-except ImportError:
-    # Fallback or handling if run from different context
-    pass
+except Exception as e:
+    import logging
+    logging.error(f"Failed to import jira modules: {e}")
+    snapshot_jira_data = None
+    fetch_jira_data = None
 
 DB_NAME = "dashboard.db"
 
