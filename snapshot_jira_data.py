@@ -57,8 +57,11 @@ def save_snapshot(issues):
         if comments:
             latest_comment_body = comments[-1].get('body', '')
 
-        # Handle LLM Summary
-        llm_summary = llm_service.summarize_comments(key, summary, comments)
+        # Handle LLM Summary - only for issues with comments
+        if comments:
+            llm_summary = llm_service.summarize_comments(key, summary, comments)
+        else:
+            llm_summary = ""
 
         campaign_data.append((
             snapshot_id, key, summary, status, priority, 

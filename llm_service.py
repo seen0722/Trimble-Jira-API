@@ -13,7 +13,7 @@ class LLMService:
         self.model = os.getenv("LLM_MODEL", "gpt-4o-mini")
 
         if self.provider == "openai" and self.api_key:
-            self.client = OpenAI(api_key=self.api_key)
+            self.client = OpenAI(api_key=self.api_key, timeout=30.0)
         else:
             self.client = None
 
