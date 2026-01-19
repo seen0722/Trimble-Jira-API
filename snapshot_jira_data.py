@@ -9,19 +9,10 @@ from llm_service import llm_service
 DB_NAME = "dashboard.db"
 
 def save_snapshot(issues):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-
-    # 1. Create a new snapshot record
-    total_count = len(issues)
-    cursor.execute('''
-        INSERT INTO snapshots (total_issues) VALUES (?)
-    ''', (total_count,))
-    snapshot_id = cursor.lastrowid
-    print(f"Created Snapshot ID: {snapshot_id} (Issues: {total_count})")
-
-    # 2. Insert issues
-    campaign_data = []
+    # 1. Prepare data first (heavy lifting, especially LLM calls)
+    campaign_data_partial = []
+    print(f"Processing {len(issues)} issues for snapshot...")
+    
     for issue in issues:
         fields = issue.get('fields', {})
         
@@ -57,29 +48,57 @@ def save_snapshot(issues):
         if comments:
             latest_comment_body = comments[-1].get('body', '')
 
-        # Handle LLM Summary - only for issues with comments
-        if comments:
-            llm_summary = llm_service.summarize_comments(key, summary, comments)
-        else:
-            llm_summary = ""
+        # Handle LLM Summary
+        # Disabled for snapshot performance (to prevent timeouts on Refresh Data)
+        # LLM summaries are generated on-demand for the Weekly Report.
+        llm_summary = ""
+        # if comments:
+        #     llm_summary = llm_service.summarize_comments(key, summary, comments)
+        # else:
+        #     llm_summary = ""
 
-        campaign_data.append((
-            snapshot_id, key, summary, status, priority, 
+        # Store tuple without snapshot_id for now
+        campaign_data_partial.append((
+            key, summary, status, priority, 
             assignee_name, created, resolution_date, issuetype, component_str,
             reporter_name, updated, labels_str, latest_comment_body, llm_summary
         ))
 
-    cursor.executemany('''
-        INSERT INTO issues (
-            snapshot_id, key, summary, status, priority, 
-            assignee, created_date, resolution_date, type, component,
-            reporter, updated_date, labels, latest_comment, llm_summary
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', campaign_data)
+    # 2. Database operations (Short transaction)
+    conn = sqlite3.connect(DB_NAME, timeout=30.0) # Increase timeout just in case
+    cursor = conn.cursor()
 
-    conn.commit()
-    conn.close()
-    print("Snapshot data saved successfully.")
+    try:
+        # Create a new snapshot record
+        total_count = len(issues)
+        cursor.execute('''
+            INSERT INTO snapshots (total_issues) VALUES (?)
+        ''', (total_count,))
+        snapshot_id = cursor.lastrowid
+        print(f"Created Snapshot ID: {snapshot_id} (Issues: {total_count})")
+
+        # Add snapshot_id to data
+        campaign_data = []
+        for row in campaign_data_partial:
+            # Preprend snapshot_id to the tuple
+            campaign_data.append((snapshot_id,) + row)
+
+        cursor.executemany('''
+            INSERT INTO issues (
+                snapshot_id, key, summary, status, priority, 
+                assignee, created_date, resolution_date, type, component,
+                reporter, updated_date, labels, latest_comment, llm_summary
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', campaign_data)
+
+        conn.commit()
+        print("Snapshot data saved successfully.")
+    except Exception as e:
+        print(f"Error saving snapshot to DB: {e}")
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
 
 def main():
     # Ensure DB exists

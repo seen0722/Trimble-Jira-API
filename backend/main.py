@@ -95,14 +95,14 @@ def trigger_snapshot():
 last_generated_report = {"content": None, "filename": None}
 
 @app.get("/api/weekly-report/stream")
-def stream_weekly_report():
+def stream_weekly_report(provider: str = "openai"):
     """Stream weekly report generation with progress updates via SSE."""
     def event_generator():
         global last_generated_report
         try:
             from report_service import generate_realtime_report
             
-            for update in generate_realtime_report():
+            for update in generate_realtime_report(provider=provider):
                 if update.get("type") == "complete":
                     # Store for download endpoint
                     last_generated_report["content"] = update.get("content")

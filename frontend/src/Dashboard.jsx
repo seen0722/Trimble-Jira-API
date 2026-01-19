@@ -44,6 +44,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(false);
+  const [llmProvider, setLlmProvider] = useState('cambrian');
 
   useEffect(() => {
     fetchData();
@@ -87,7 +88,7 @@ export default function Dashboard() {
     setReportContent(null);
     setReportFilename(null);
 
-    const eventSource = new EventSource(`${API_BASE}/weekly-report/stream`);
+    const eventSource = new EventSource(`${API_BASE}/weekly-report/stream?provider=${llmProvider}`);
 
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -105,8 +106,18 @@ export default function Dashboard() {
         setReportFilename(data.filename);
         setReportProgress({ current: data.issue_count || 0, total: data.issue_count || 0, status: 'Complete! Downloading...', issueKey: null });
         
-        // Download from backend endpoint (proper Content-Disposition)
-        window.location.href = `${API_BASE}/weekly-report/download`;
+        // Create blob from content and trigger download directly
+        const blob = new Blob([data.content], { type: 'text/markdown' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = data.filename || `weekly_report_${new Date().toISOString().split('T')[0]}.md`;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Cleanup
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
         
         setTimeout(() => setGeneratingReport(false), 1500);
       } else if (data.type === 'error') {
@@ -236,6 +247,22 @@ export default function Dashboard() {
                 <Activity size={16} /> 
                 Gate View
             </Link>
+            
+            <select 
+              value={llmProvider} 
+              onChange={(e) => setLlmProvider(e.target.value)}
+              style={{
+                padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb',
+                fontSize: '14px', background: 'white', cursor: 'pointer', outline: 'none',
+                color: '#374151', minWidth: '160px', appearance: 'auto'
+              }}
+              disabled={generatingReport}
+            >
+              <option value="cambrian">Cambrian (Internal)</option>
+              <option value="openai">OpenAI (GPT-4o)</option>
+              {/* <option value="ollama">Ollama (Local)</option> */}
+            </select>
+
             <button 
               className="refresh-btn" 
               onClick={handleGenerateReport} 

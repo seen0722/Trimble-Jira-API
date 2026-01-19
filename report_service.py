@@ -12,12 +12,13 @@ from llm_service import llm_service
 
 load_dotenv()
 
-def generate_realtime_report(progress_callback=None):
+def generate_realtime_report(progress_callback=None, provider=None):
     """
     Generate a weekly report in real-time by fetching Jira and calling LLM.
     
     Args:
         progress_callback: Optional function(current, total, status, issue_key) for progress updates
+        provider: Optional LLM provider override ('openai', 'cambrian', etc.)
     
     Yields:
         Progress updates as dict, final yield is the complete report
@@ -66,7 +67,7 @@ def generate_realtime_report(progress_callback=None):
         yield {"type": "progress", "current": idx + 1, "total": total_issues, "status": f"Analyzing {key}...", "issue_key": key}
         
         # Generate LLM summary
-        llm_summary = llm_service.summarize_comments(key, summary, comments)
+        llm_summary = llm_service.summarize_comments(key, summary, comments, provider=provider)
         
         # Get latest comment
         latest_comment = comments[-1].get('body', '') if comments else ""

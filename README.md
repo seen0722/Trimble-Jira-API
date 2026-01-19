@@ -2,6 +2,19 @@
 
 A specialized tool for fetching, analyzing, and generating reports from Trimble Jira data.
 
+## 🚀 Docker Hub Images (Multi-Architecture)
+Pre-built images for Linux/AMD64 are available on Docker Hub:
+```bash
+docker pull seen0516/jira-api-backend:latest
+docker pull seen0516/jira-api-frontend:latest
+```
+
+## 🧠 LLM Providers
+This project supports multiple LLM providers for generating weekly summaries:
+1. **OpenAI** (default): Uses `gpt-4o-mini` or other models.
+2. **Cambrian** (Internal): Pegatron's internal secure LLM gateway (drop-in replacement).
+   - *Note: SSL verification is disabled for internal Cambrian endpoints.*
+
 ## 🚀 Deployment (Vultr / VPS)
 
 This project is containerized using Docker for easy deployment.
@@ -19,14 +32,17 @@ This project is containerized using Docker for easy deployment.
    cd Trimble-Jira-API
    ```
 
-> **Note**: Make sure you have added your server's SSH public key to your [GitHub account](https://github.com/settings/keys).
-
 2. **Configure Environment Variables**
    ```bash
    cp .env.example .env
-   # Edit .env and fill in your JIRA_API_KEY, JIRA_URL, etc.
+   # Edit .env to configure Jira keys and LLM provider
    vim .env
    ```
+   
+   **Key .env settings:**
+   - `LLM_PROVIDER`: Set to `cambrian` (default) or `openai`.
+   - `CAMBRIAN_BASE_URL`: Endpoint for internal LLM (e.g., `https://api.cambrian.pegatroncorp.com`).
+   - `CAMBRIAN_MODEL`: Model name (e.g., `LLAMA 3.3 70B`).
 
 3. **Start the services**
    ```bash
@@ -42,7 +58,7 @@ This project is containerized using Docker for easy deployment.
 
 ## 🛠 Project Structure
 
-- `frontend/`: Vite-based dashboard.
+- `frontend/`: Vite-based dashboard (React + Recharts).
 - `backend/`: FastAPI services.
 - `docker-compose.yml`: Full-stack orchestration.
 - `nginx.conf`: Routing and API proxying.
