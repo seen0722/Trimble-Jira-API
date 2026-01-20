@@ -1,0 +1,27 @@
+services:
+  backend:
+    image: seen0516/jira-api-backend:latest
+    container_name: jira-api-backend
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./dashboard.db:/app/dashboard.db
+      - ./reports:/app/reports
+    networks:
+      - app-network
+
+  frontend:
+    image: seen0516/jira-api-frontend:latest
+    container_name: jira-api-frontend
+    restart: always
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
